@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h2>User Dashboard</h2>
+    <p class="welcome-text">Welcome to Arogya Vani Health System</p>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-section">
+      <h3>Quick Actions</h3>
+      <a href="chatbot-new.html" target="_blank" class="action-btn chatbot-btn">
+        🤖 Chat with Health Bot
+      </a>
+      <a href="tel:7488726719" class="action-btn emergency-btn">
+        🚨 Call Emergency (7488726719)
+      </a>
+    </div>
+
+    <!-- Vaccination Info -->
+    <div class="dashboard-section">
+      <h3>Next Vaccination Date</h3>
+      <p id="nextVaccineDate" class="vaccine-date">Loading...</p>
+    </div>
+
+    <!-- Registration Options -->
+    <div class="dashboard-section">
+      <h3>Child Registration</h3>
+      <a href="registration.html" class="action-btn registration-btn">
+        📝 Fill Registration Form (Text)
+      </a>
+
+      <div class="audio-section">
+        <h4>Audio Registration (Optional)</h4>
+        <p class="info-text">
+          ✅ If you filled the form, audio will be attached to the same registration.<br>
+          ✅ If you did not fill the form, audio will be saved as audio-only registration.
+        </p>
+
+        <div class="audio-controls">
+          <button id="startRecBtn" class="btn-secondary">🎤 Start Recording</button>
+          <button id="stopRecBtn" class="btn-secondary" disabled>⏹️ Stop</button>
+        </div>
+
+        <p id="audioStatus" class="status-text">Status: idle</p>
+        <pre id="audioErr"></pre>
+        <audio id="audioPlayer" controls></audio>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <button id="logoutBtn" class="btn-logout">Logout</button>
+  </div>
+
+  <script type="module" src="/js/user/user.js"></script>
+  <script type="module" src="/js/user/record-upload.js"></script>
+</body>
+
+
+</html>

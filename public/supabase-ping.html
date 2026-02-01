@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Supabase Ping</title>
+</head>
+<body>
+  <h2>Supabase Storage Ping</h2>
+  <p id="out">Testing...</p>
+
+  <script type="module">
+    import { supabase } from "../js/supabase.js";
+
+    const out = document.getElementById("out");
+
+    try {
+      // This checks if your browser can talk to Supabase Storage at all
+      const { data, error } = await supabase.storage.listBuckets();
+
+      if (error) {
+        out.textContent = "ERROR: " + error.message;
+      } else {
+        out.textContent = "OK ✅ Buckets: " + data.map(b => b.name).join(", ");
+      }
+    } catch (e) {
+      out.textContent = "FETCH FAILED ❌ " + (e?.message || e);
+    }
+  </script>
+</body>
+</html>

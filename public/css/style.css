@@ -1,0 +1,461 @@
+/* ==========================================
+   AROGYA VANI - GLOBAL STYLES
+   ========================================== */
+
+/* ----- Reset & Base Styles ----- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #333;
+}
+
+/* ----- Container ----- */
+.container {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  max-width: 900px;
+  width: 100%;
+  margin: 20px auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+
+h2 {
+  color: #667eea;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+h3 {
+  color: #764ba2;
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #667eea;
+}
+
+h4 {
+  color: #555;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+p {
+  color: #666;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.info-text {
+  background: #f0f7ff;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* ==========================================
+   FORMS & INPUTS
+   ========================================== */
+
+form {
+  margin-top: 30px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: inherit;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+input::placeholder {
+  color: #999;
+}
+
+/* Select Dropdown */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* File Input */
+input[type="file"] {
+  padding: 12px;
+  background: #f8f9fa;
+  cursor: pointer;
+  border: 2px dashed #667eea;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+/* Primary Buttons */
+button,
+input[type="submit"] {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+button:hover,
+input[type="submit"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+button:active,
+input[type="submit"]:active {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Buttons */
+.btn-secondary {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  color: #333;
+  width: auto;
+  padding: 12px 24px;
+  margin: 5px;
+  box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4);
+}
+
+.btn-secondary:hover {
+  box-shadow: 0 6px 20px rgba(168, 237, 234, 0.6);
+}
+
+/* Logout Button */
+.btn-logout {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  margin-top: 30px;
+}
+
+.btn-logout:hover {
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+}
+
+/* ==========================================
+   DASHBOARD SPECIFIC STYLES
+   ========================================== */
+
+.dashboard-section {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  border: 2px solid #e9ecef;
+}
+
+/* Action Buttons */
+.action-btn {
+  display: block;
+  padding: 18px 25px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 12px 0;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.chatbot-btn {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.emergency-btn {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.registration-btn {
+  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+}
+
+/* Vaccine Date */
+.vaccine-date {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+  margin: 0;
+}
+
+/* Audio Section */
+.audio-section {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  border: 2px solid #e0e0e0;
+}
+
+.audio-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 15px 0;
+}
+
+.status-text {
+  background: #e3f2fd;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+  font-weight: 600;
+  color: #1565c0;
+}
+
+audio {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+pre {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 14px;
+  color: #856404;
+  margin-top: 10px;
+}
+
+/* ==========================================
+   LOGIN & SIGNUP PAGES
+   ========================================== */
+
+/* Center forms on auth pages */
+body:has(form#loginForm),
+body:has(form#signupForm) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body:has(form#loginForm)>*,
+body:has(form#signupForm)>* {
+  max-width: 450px;
+}
+
+/* Links */
+a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+p a {
+  display: inline;
+}
+
+/* Center text on auth pages */
+body:has(form#loginForm) p,
+body:has(form#signupForm) p {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* ==========================================
+   REGISTRATION PAGE
+   ========================================== */
+
+body:has(form#regForm) .container {
+  max-width: 600px;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 30px 20px;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  .action-btn {
+    font-size: 16px;
+    padding: 15px 20px;
+  }
+
+  .audio-controls {
+    flex-direction: column;
+  }
+
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 25px 15px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  button,
+  input[type="submit"] {
+    font-size: 16px;
+    padding: 14px;
+  }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+em {
+  color: #764ba2;
+  font-style: normal;
+  font-weight: 600;
+}
+
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #667eea, transparent);
+  margin: 30px 0;
+}

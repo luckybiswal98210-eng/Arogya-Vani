@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Registration</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h2>Child Registration Form</h2>
+    <p class="welcome-text"><em>Please fill in your child's vaccination details</em></p>
+
+    <form id="regForm" enctype="multipart/form-data">
+      <input id="childName" placeholder="Child Name" required>
+      <input id="dob" type="date" required>
+
+      <select id="gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <input id="parentName" placeholder="Parent Name" required>
+      <input id="parentAadhaar" placeholder="Parent's Aadhaar Number" required>
+      <input id="bloodGroup" placeholder="Blood Group (e.g., O+)" required>
+      <input id="mailId" type="email" placeholder="Mail ID" required>
+      <input id="phone" placeholder="Phone Number" required>
+      <input id="address" placeholder="Address" required>
+
+      <label for="childPhoto">Child Photo:</label>
+      <input id="childPhoto" type="file" accept="image/*" required>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <p><a href="/index.html">Back to Dashboard</a></p>
+  </div>
+
+  <script type="module" src="/js/user/registration.js"></script>
+</body>
+
+</html>
