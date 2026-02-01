@@ -360,8 +360,20 @@
         </div>
     </div>
     <script src="chatbot-data.js"></script>
+    <script src="chatbot-conversation-flows.js"></script>
     <script>
         let selectedLanguage = 'en', isRecording = false, recognition = null, currentUtterance = null, currentButtons = null, isPaused = false;
+
+        // Conversation state management
+        let conversationState = {
+            stage: 'initial',
+            symptom: null,
+            duration: null,
+            severity: null,
+            additionalSymptoms: [],
+            responses: []
+        };
+
         const chatMessages = document.getElementById('chatMessages'), userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn'), voiceBtn = document.getElementById('voiceBtn');
         const outputLanguageSelect = document.getElementById('outputLanguage'), statusIndicator = document.getElementById('statusIndicator');
@@ -483,7 +495,137 @@
         function hideStatus() { statusIndicator.style.display = 'none'; }
         function showTypingIndicator() { const indicator = document.createElement('div'); indicator.className = 'message bot'; indicator.id = 'typingIndicator'; const typingDiv = document.createElement('div'); typingDiv.className = 'typing-indicator show'; typingDiv.innerHTML = '<span></span><span></span><span></span>'; indicator.appendChild(typingDiv); chatMessages.appendChild(indicator); chatMessages.scrollTop = chatMessages.scrollHeight; }
         function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
-        function getBotResponse(userMessage, outputLang) { const detectedLang = detectLanguage(userMessage); const symptom = findSymptom(userMessage, detectedLang); return symptom ? getResponse(symptom, outputLang) : getResponse('general_discomfort', outputLang); }
+        function getBotResponse(userMessage, outputLang) {
+            const detectedLang = detectLanguage(userMessage);
+            const normalized = userMessage.toLowerCase().trim();
+
+            // Detect acknowledgment/end phrases
+            const ackPhrases = ['ok', 'okay', 'thanks', 'thank you', 'got it', 'understood', 'alright', 'fine', 'good', 'धन्यवाद', 'ठीक है', 'ओके', 'ठीक आहे', 'நன்றி', 'சரி', 'ধন্যবাদ', 'ঠিক আছে', 'ధన్యవాదాలు', 'సరే', 'ಧನ್ಯವಾದಗಳು', 'ಸರಿ', 'આભાર', 'બરાબર'];
+
+            if (ackPhrases.some(p => normalized === p || normalized.includes(p))) {
+                const thankYou = {
+                    en: '🙏 You\'re welcome! Take care and get well soon. Feel free to ask if you have any other health concerns.',
+                    hi: '🙏 स्वागत है! अपना ख्याल रखें। किसी अन्य समस्या के लिए पूछें।',
+                    mr: '🙏 स्वागत आहे! स्वतःची काळजी घ्या। इतर समस्येसाठी विचारा।',
+                    ta: '🙏 வரவேற்கிறோம்! உங்களை கவனித்துக்கொள்ளுங்கள்.',
+                    bn: '🙏 স্বাগতম! নিজের যত্ন নিন।',
+                    te: '🙏 స్వాగతం! మిమ్మల్ని జాగ్రత్తగా చూసుకోండి।',
+                    kn: '🙏 ಸ್ವಾಗತ! ನಿಮ್ಮನ್ನು ನೋಡಿಕೊಳ್ಳಿ।',
+                    gu: '🙏 સ્વાગત છે! તમારી સંભાળ રાખો।'
+                };
+                resetConversation();
+                return thankYou[outputLang] || thankYou.en;
+            }
+
+            // Initial stage - detect symptom
+            if (conversationState.stage === 'initial') {
+                const symptom = findSymptom(userMessage, detectedLang);
+                if (symptom && CONVERSATION_FLOWS[symptom]) {
+                    conversationState.symptom = symptom;
+                    conversationState.stage = 'duration';
+                    conversationState.responses.push(userMessage);
+                    return CONVERSATION_FLOWS[symptom].questions.duration[outputLang];
+                }
+                return getResponse(symptom || 'general_discomfort', outputLang);
+            }
+
+            // Duration stage
+            if (conversationState.stage === 'duration') {
+                conversationState.duration = extractDuration(userMessage);
+                conversationState.stage = 'severity';
+                conversationState.responses.push(userMessage);
+                return CONVERSATION_FLOWS[conversationState.symptom].questions.severity[outputLang];
+            }
+
+            // Severity stage
+            if (conversationState.stage === 'severity') {
+                conversationState.severity = extractSeverity(userMessage);
+                conversationState.stage = 'additional';
+                conversationState.responses.push(userMessage);
+                return CONVERSATION_FLOWS[conversationState.symptom].questions.additional[outputLang];
+            }
+
+            // Additional symptoms stage - final response
+            if (conversationState.stage === 'additional') {
+                conversationState.additionalSymptoms = extractAdditionalSymptoms(userMessage);
+                conversationState.responses.push(userMessage);
+                const finalResponse = generatePersonalizedAdvice(conversationState, outputLang);
+                resetConversation();
+                return finalResponse;
+            }
+
+            return getResponse('general_discomfort', outputLang);
+        }
+
+        function extractDuration(text) {
+            const numbers = text.match(/\d+/);
+            return numbers ? numbers[0] + ' days' : 'a few days';
+        }
+
+        function extractSeverity(text) {
+            const lower = text.toLowerCase();
+            if (SEVERITY_PATTERNS.mild.some(p => lower.includes(p))) return 'mild';
+            if (SEVERITY_PATTERNS.severe.some(p => lower.includes(p))) return 'severe';
+            if (SEVERITY_PATTERNS.moderate.some(p => lower.includes(p))) return 'moderate';
+            return 'moderate';
+        }
+
+        function extractAdditionalSymptoms(text) {
+            const symptoms = [];
+            const lower = text.toLowerCase();
+            if (lower.includes('headache') || lower.includes('सिरदर्द')) symptoms.push('headache');
+            if (lower.includes('fever') || lower.includes('बुखार')) symptoms.push('fever');
+            if (lower.includes('cough') || lower.includes('खांसी')) symptoms.push('cough');
+            return symptoms;
+        }
+
+        function generatePersonalizedAdvice(state, lang) {
+            const baseAdvice = getResponse(state.symptom, lang);
+            const durationText = {
+                en: `You've had ${state.symptom.replace('_', ' ')} for ${state.duration} with ${state.severity} severity.`,
+                hi: `आपको ${state.duration} से ${state.severity} ${state.symptom} है।`,
+                mr: `तुम्हाला ${state.duration} पासून ${state.severity} ${state.symptom} आहे।`
+            };
+
+            const prefix = durationText[lang] || durationText.en;
+            let advice = `${prefix}\n\n${baseAdvice}`;
+
+            if (state.severity === 'severe' || (state.duration && parseInt(state.duration) > 5)) {
+                const urgentText = {
+                    en: '\n\n⚠️ IMPORTANT: Please consult a doctor immediately as your symptoms are severe or prolonged.',
+                    hi: '\n\n⚠️ महत्वपूर्ण: कृपया तुरंत डॉक्टर से मिलें क्योंकि आपके लक्षण गंभीर या लंबे समय के हैं।',
+                    mr: '\n\n⚠️ महत्त्वाचे: कृपया ताबडतोब डॉक्टरांना भेटा कारण तुमची लक्षणे गंभीर किंवा दीर्घकाळ आहेत।'
+                };
+                advice += urgentText[lang] || urgentText.en;
+            }
+
+            // Add thank you message
+            const thankYouText = {
+                en: '\n\n🙏 Thank you for using Arogya Vani! Take care and get well soon. Feel free to ask if you have any other health concerns.',
+                hi: '\n\n🙏 आरोग्य वाणी का उपयोग करने के लिए धन्यवाद! अपना ख्याल रखें और जल्द ठीक हो जाएं। किसी अन्य स्वास्थ्य समस्या के लिए बेझिझक पूछें।',
+                mr: '\n\n🙏 आरोग्य वाणी वापरल्याबद्दल धन्यवाद! स्वतःची काळजी घ्या आणि लवकर बरे व्हा. इतर कोणत्याही आरोग्य समस्येसाठी विचारा।',
+                ta: '\n\n🙏 ஆரோக்ய வாணியைப் பயன்படுத்தியதற்கு நன்றி! உங்களை கவனித்துக்கொள்ளுங்கள், விரைவில் குணமடையுங்கள். வேறு ஏதேனும் உடல்நலப் பிரச்சினைகள் இருந்தால் கேளுங்கள்.',
+                bn: '\n\n🙏 আরোগ্য বাণী ব্যবহার করার জন্য ধন্যবাদ! নিজের যত্ন নিন এবং শীঘ্রই সুস্থ হন। অন্য কোনো স্বাস্থ্য সমস্যা থাকলে জিজ্ঞাসা করুন।',
+                te: '\n\n🙏 ఆరోగ్య వాణిని ఉపయోగించినందుకు ధన్యవాదాలు! మిమ్మల్ని జాగ్రత్తగా చూసుకోండి మరియు త్వరగా కోలుకోండి. ఇతర ఆరోగ్య సమస్యలు ఉంటే అడగండి.',
+                kn: '\n\n🙏 ಆರೋಗ್ಯ ವಾಣಿ ಬಳಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು! ನಿಮ್ಮನ್ನು ನೋಡಿಕೊಳ್ಳಿ ಮತ್ತು ಬೇಗ ಗುಣಮುಖರಾಗಿ. ಇತರ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳಿದ್ದರೆ ಕೇಳಿ.',
+                gu: '\n\n🙏 આરોગ્ય વાણીનો ઉપયોગ કરવા બદલ આભાર! તમારી સંભાળ રાખો અને જલ્દી સાજા થાઓ. અન્ય કોઈ આરોગ્ય સમસ્યા હોય તો પૂછો.'
+            };
+
+            advice += thankYouText[lang] || thankYouText.en;
+
+            return advice;
+        }
+
+        function resetConversation() {
+            conversationState = {
+                stage: 'initial',
+                symptom: null,
+                duration: null,
+                severity: null,
+                additionalSymptoms: [],
+                responses: []
+            };
+        }
         function detectLanguage(text) { if (/[\u0900-\u097F]/.test(text)) return 'hi'; if (/[\u0980-\u09FF]/.test(text)) return 'bn'; if (/[\u0B80-\u0BFF]/.test(text)) return 'ta'; if (/[\u0C00-\u0C7F]/.test(text)) return 'te'; if (/[\u0C80-\u0CFF]/.test(text)) return 'kn'; if (/[\u0A80-\u0AFF]/.test(text)) return 'gu'; return 'en'; }
         function findSymptom(userInput, language) { const normalized = userInput.toLowerCase().trim(); for (const lang in INPUT_KEYWORDS) { for (const [keyword, symptom] of Object.entries(INPUT_KEYWORDS[lang])) { if (normalized.includes(keyword.toLowerCase())) { return symptom; } } } for (const symptom of Object.keys(RESPONSES_EN)) { if (normalized.includes(symptom.replace('_', ' ')) || normalized.includes(symptom)) { return symptom; } } return null; }
         function getResponse(symptom, language) { if (language === 'en' || !MULTILINGUAL_RESPONSES[language]) { return RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort']; } const langResponses = MULTILINGUAL_RESPONSES[language] || {}; return langResponses[symptom] || RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort']; }
