@@ -497,7 +497,12 @@
         function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
         function getBotResponse(userMessage, outputLang) {
             const detectedLang = detectLanguage(userMessage);
-            const normalized = userMessage.toLowerCase().trim();
+            const normalized = normalizeUserMessage(userMessage);
+
+            if (isGreeting(normalized)) {
+                resetConversation();
+                return getGreetingResponse(normalized, outputLang);
+            }
 
             // Detect acknowledgment/end phrases
             const ackPhrases = ['ok', 'okay', 'thanks', 'thank you', 'got it', 'understood', 'alright', 'fine', 'good', 'धन्यवाद', 'ठीक है', 'ओके', 'ठीक आहे', 'நன்றி', 'சரி', 'ধন্যবাদ', 'ঠিক আছে', 'ధన్యవాదాలు', 'సరే', 'ಧನ್ಯವಾದಗಳು', 'ಸರಿ', 'આભાર', 'બરાબર'];
@@ -526,7 +531,10 @@
                     conversationState.responses.push(userMessage);
                     return CONVERSATION_FLOWS[symptom].questions.duration[outputLang];
                 }
-                return getResponse(symptom || 'general_discomfort', outputLang);
+                if (symptom) {
+                    return getResponse(symptom, outputLang);
+                }
+                return getOutOfScopeResponse(outputLang);
             }
 
             // Duration stage
@@ -555,6 +563,76 @@
             }
 
             return getResponse('general_discomfort', outputLang);
+        }
+
+        function normalizeUserMessage(text) {
+            return text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').trim();
+        }
+
+        function isGreeting(normalized) {
+            const greetingPhrases = [
+                'hi', 'hii', 'hiii', 'hiiii', 'hello', 'helo', 'helloo', 'hey', 'hy', 'hlo', 'hloo',
+                'namaste', 'namaskar', 'good morning', 'good afternoon', 'good evening',
+                'नमस्ते', 'नमस्कार', 'हाय', 'हैलो',
+                'வணக்கம்', 'ஹலோ',
+                'হ্যালো', 'নমস্কার',
+                'హలో', 'నమస్తే',
+                'ಹಲೋ', 'ನಮಸ್ಕಾರ',
+                'હેલો', 'નમસ્તે'
+            ];
+
+            return greetingPhrases.some(phrase => normalized === phrase);
+        }
+
+        function getGreetingResponse(normalized, language) {
+            const echoGreeting = getGreetingEcho(normalized, language);
+            const greetingResponses = {
+                en: `${echoGreeting}! I am your AI health assistant. How are you today? Please tell me your symptom or health concern, and I will try to help you.`,
+                hi: `${echoGreeting}! मैं आपकी AI health assistant हूं। आप आज कैसे हैं? कृपया अपना लक्षण या स्वास्थ्य समस्या बताइए, मैं मदद करने की कोशिश करूंगी।`,
+                mr: `${echoGreeting}! मी तुमची AI health assistant आहे. तुम्ही आज कसे आहात? कृपया तुमची लक्षणे किंवा आरोग्य समस्या सांगा, मी मदत करण्याचा प्रयत्न करेन.`,
+                ta: `${echoGreeting}! நான் உங்கள் AI health assistant. நீங்கள் இன்று எப்படி இருக்கிறீர்கள்? உங்கள் அறிகுறி அல்லது உடல்நலப் பிரச்சினையை சொல்லுங்கள், நான் உதவ முயற்சிப்பேன்.`,
+                bn: `${echoGreeting}! আমি আপনার AI health assistant। আপনি আজ কেমন আছেন? আপনার উপসর্গ বা স্বাস্থ্য সমস্যাটি বলুন, আমি সাহায্য করার চেষ্টা করব।`,
+                te: `${echoGreeting}! నేను మీ AI health assistant ని. మీరు ఈ రోజు ఎలా ఉన్నారు? మీ లక్షణం లేదా ఆరోగ్య సమస్యను చెప్పండి, నేను సహాయం చేయడానికి ప్రయత్నిస్తాను.`,
+                kn: `${echoGreeting}! ನಾನು ನಿಮ್ಮ AI health assistant. ನೀವು ಇಂದು ಹೇಗಿದ್ದೀರಿ? ನಿಮ್ಮ ಲಕ್ಷಣ ಅಥವಾ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಯನ್ನು ತಿಳಿಸಿ, ನಾನು ಸಹಾಯ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತೇನೆ.`,
+                gu: `${echoGreeting}! હું તમારી AI health assistant છું. તમે આજે કેમ છો? કૃપા કરીને તમારું લક્ષણ અથવા આરોગ્ય સમસ્યા જણાવો, હું મદદ કરવાનો પ્રયત્ન કરીશ.`
+            };
+
+            return greetingResponses[language] || greetingResponses.en;
+        }
+
+        function getGreetingEcho(normalized, language) {
+            if (language !== 'en') {
+                const localizedGreetings = {
+                    hi: 'नमस्ते',
+                    mr: 'नमस्कार',
+                    ta: 'வணக்கம்',
+                    bn: 'নমস্কার',
+                    te: 'నమస్తే',
+                    kn: 'ನಮಸ್ಕಾರ',
+                    gu: 'નમસ્તે'
+                };
+
+                return localizedGreetings[language] || 'Hello';
+            }
+
+            if (normalized.startsWith('hey')) return 'Hey';
+            if (normalized.startsWith('hello') || normalized === 'helo' || normalized === 'helloo') return 'Hello';
+            return 'Hi';
+        }
+
+        function getOutOfScopeResponse(language) {
+            const responses = {
+                en: "I can help with health-related questions and symptoms only. Please tell me about a symptom, health concern, or medical issue.",
+                hi: "मैं केवल स्वास्थ्य से जुड़े सवालों और लक्षणों में मदद कर सकती हूं। कृपया कोई लक्षण या स्वास्थ्य समस्या बताइए।",
+                mr: "मी फक्त आरोग्याशी संबंधित प्रश्न आणि लक्षणांमध्ये मदत करू शकते. कृपया तुमची लक्षणे किंवा आरोग्य समस्या सांगा.",
+                ta: "நான் உடல்நலம் தொடர்பான கேள்விகள் மற்றும் அறிகுறிகளில் மட்டும் உதவ முடியும். தயவுசெய்து உங்கள் அறிகுறி அல்லது உடல்நலப் பிரச்சினையை சொல்லுங்கள்.",
+                bn: "আমি শুধু স্বাস্থ্য-সম্পর্কিত প্রশ্ন ও উপসর্গে সাহায্য করতে পারি। দয়া করে আপনার উপসর্গ বা স্বাস্থ্য সমস্যা বলুন।",
+                te: "నేను ఆరోగ్యానికి సంబంధించిన ప్రశ్నలు మరియు లక్షణాల గురించి మాత్రమే సహాయం చేయగలను. దయచేసి మీ లక్షణం లేదా ఆరోగ్య సమస్యను చెప్పండి.",
+                kn: "ನಾನು ಆರೋಗ್ಯ ಸಂಬಂಧಿತ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಲಕ್ಷಣಗಳಲ್ಲಿ ಮಾತ್ರ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಲಕ್ಷಣ ಅಥವಾ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಯನ್ನು ತಿಳಿಸಿ.",
+                gu: "હું ફક્ત આરોગ્ય સંબંધિત પ્રશ્નો અને લક્ષણોમાં જ મદદ કરી શકું છું. કૃપા કરીને તમારું લક્ષણ અથવા આરોગ્ય સમસ્યા જણાવો."
+            };
+
+            return responses[language] || responses.en;
         }
 
         function extractDuration(text) {
