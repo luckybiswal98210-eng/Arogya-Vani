@@ -393,11 +393,17 @@
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-        function sendMessage() {
+        async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
             addMessage(message, 'user'); userInput.value = ''; showTypingIndicator();
-            setTimeout(() => { const response = getBotResponse(message, selectedLanguage); hideTypingIndicator(); addMessage(response, 'bot', true); }, 500);
+            try {
+                const response = await getBotResponse(message, selectedLanguage);
+                hideTypingIndicator(); addMessage(response, 'bot', true);
+            } catch (e) {
+                console.error(e);
+                hideTypingIndicator(); addMessage("I'm sorry, I encountered an error processing your request.", 'bot', true);
+            }
         }
 
         function addMessage(text, sender, enableAudio = false) {
@@ -495,7 +501,20 @@
         function hideStatus() { statusIndicator.style.display = 'none'; }
         function showTypingIndicator() { const indicator = document.createElement('div'); indicator.className = 'message bot'; indicator.id = 'typingIndicator'; const typingDiv = document.createElement('div'); typingDiv.className = 'typing-indicator show'; typingDiv.innerHTML = '<span></span><span></span><span></span>'; indicator.appendChild(typingDiv); chatMessages.appendChild(indicator); chatMessages.scrollTop = chatMessages.scrollHeight; }
         function hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); if (indicator) indicator.remove(); }
-        function getBotResponse(userMessage, outputLang) {
+        async function translateText(text, targetLang) {
+            if (targetLang === 'en') return text;
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                const json = await response.json();
+                return json[0].map(item => item[0]).join('');
+            } catch (e) {
+                console.error('Translation error:', e);
+                return text;
+            }
+        }
+
+        async function getBotResponse(userMessage, outputLang) {
             const detectedLang = detectLanguage(userMessage);
             const normalized = normalizeUserMessage(userMessage);
 
@@ -532,7 +551,8 @@
                     return CONVERSATION_FLOWS[symptom].questions.duration[outputLang];
                 }
                 if (symptom) {
-                    return getResponse(symptom, outputLang);
+                    const response = await getResponse(symptom, outputLang);
+                    return response;
                 }
                 return getOutOfScopeResponse(outputLang);
             }
@@ -557,12 +577,12 @@
             if (conversationState.stage === 'additional') {
                 conversationState.additionalSymptoms = extractAdditionalSymptoms(userMessage);
                 conversationState.responses.push(userMessage);
-                const finalResponse = generatePersonalizedAdvice(conversationState, outputLang);
+                const finalResponse = await generatePersonalizedAdvice(conversationState, outputLang);
                 resetConversation();
                 return finalResponse;
             }
 
-            return getResponse('general_discomfort', outputLang);
+            return await getResponse('general_discomfort', outputLang);
         }
 
         function normalizeUserMessage(text) {
@@ -657,12 +677,17 @@
             return symptoms;
         }
 
-        function generatePersonalizedAdvice(state, lang) {
-            const baseAdvice = getResponse(state.symptom, lang);
+        async function generatePersonalizedAdvice(state, lang) {
+            const baseAdvice = await getResponse(state.symptom, lang);
             const durationText = {
                 en: `You've had ${state.symptom.replace('_', ' ')} for ${state.duration} with ${state.severity} severity.`,
-                hi: `आपको ${state.duration} से ${state.severity} ${state.symptom} है।`,
-                mr: `तुम्हाला ${state.duration} पासून ${state.severity} ${state.symptom} आहे।`
+                hi: `आपको ${state.duration} से ${state.severity} ${state.symptom.replace('_', ' ')} है।`,
+                mr: `तुम्हाला ${state.duration} पासून ${state.severity} ${state.symptom.replace('_', ' ')} आहे।`,
+                ta: `உங்களுக்கு ${state.duration} ஆக ${state.severity} ${state.symptom.replace('_', ' ')} உள்ளது.`,
+                bn: `আপনার ${state.duration} ধরে ${state.severity} ${state.symptom.replace('_', ' ')} আছে।`,
+                te: `మీకు ${state.duration} నుండి ${state.severity} ${state.symptom.replace('_', ' ')} ఉంది.`,
+                kn: `ನಿಮಗೆ ${state.duration} ದಿಂದ ${state.severity} ${state.symptom.replace('_', ' ')} ಇದೆ.`,
+                gu: `તમને ${state.duration} થી ${state.severity} ${state.symptom.replace('_', ' ')} છે.`
             };
 
             const prefix = durationText[lang] || durationText.en;
@@ -672,7 +697,12 @@
                 const urgentText = {
                     en: '\n\n⚠️ IMPORTANT: Please consult a doctor immediately as your symptoms are severe or prolonged.',
                     hi: '\n\n⚠️ महत्वपूर्ण: कृपया तुरंत डॉक्टर से मिलें क्योंकि आपके लक्षण गंभीर या लंबे समय के हैं।',
-                    mr: '\n\n⚠️ महत्त्वाचे: कृपया ताबडतोब डॉक्टरांना भेटा कारण तुमची लक्षणे गंभीर किंवा दीर्घकाळ आहेत।'
+                    mr: '\n\n⚠️ महत्त्वाचे: कृपया ताबडतोब डॉक्टरांना भेटा कारण तुमची लक्षणे गंभीर किंवा दीर्घकाळ आहेत।',
+                    ta: '\n\n⚠️ முக்கியம்: உங்கள் அறிகுறிகள் கடுமையாகவோ அல்லது நீண்ட காலமாகவோ இருப்பதால் தயவுசெய்து உடனடியாக மருத்துவரை அணுகவும்.',
+                    bn: '\n\n⚠️ গুরুত্বপূর্ণ: আপনার উপসর্গ গুরুতর বা দীর্ঘস্থায়ী হওয়ায় অবিলম্বে একজন ডাক্তারের সাথে পরামর্শ করুন।',
+                    te: '\n\n⚠️ ముఖ్యం: మీ లక్షణాలు తీవ్రంగా లేదా ఎక్కువ కాలం ఉన్నందున దయచేసి వెంటనే వైద్యుడిని సంప్రదించండి.',
+                    kn: '\n\n⚠️ ಪ್ರಮುಖ: ನಿಮ್ಮ ಲಕ್ಷಣಗಳು ತೀವ್ರ ಅಥವಾ ದೀರ್ಘಕಾಲಿಕವಾಗಿರುವುದರಿಂದ ದಯವಿಟ್ಟು ತಕ್ಷಣ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ.',
+                    gu: '\n\n⚠️ મહત્વપૂર્ણ: તમારા લક્ષણો ગંભીર અથવા લાંબા સમયના હોવાથી કૃપા કરીને તરત જ ડૉક્ટરની સલાહ લો.'
                 };
                 advice += urgentText[lang] || urgentText.en;
             }
@@ -706,7 +736,18 @@
         }
         function detectLanguage(text) { if (/[\u0900-\u097F]/.test(text)) return 'hi'; if (/[\u0980-\u09FF]/.test(text)) return 'bn'; if (/[\u0B80-\u0BFF]/.test(text)) return 'ta'; if (/[\u0C00-\u0C7F]/.test(text)) return 'te'; if (/[\u0C80-\u0CFF]/.test(text)) return 'kn'; if (/[\u0A80-\u0AFF]/.test(text)) return 'gu'; return 'en'; }
         function findSymptom(userInput, language) { const normalized = userInput.toLowerCase().trim(); for (const lang in INPUT_KEYWORDS) { for (const [keyword, symptom] of Object.entries(INPUT_KEYWORDS[lang])) { if (normalized.includes(keyword.toLowerCase())) { return symptom; } } } for (const symptom of Object.keys(RESPONSES_EN)) { if (normalized.includes(symptom.replace('_', ' ')) || normalized.includes(symptom)) { return symptom; } } return null; }
-        function getResponse(symptom, language) { if (language === 'en' || !MULTILINGUAL_RESPONSES[language]) { return RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort']; } const langResponses = MULTILINGUAL_RESPONSES[language] || {}; return langResponses[symptom] || RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort']; }
+        async function getResponse(symptom, language) { 
+            if (language === 'en') {
+                return RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort'];
+            }
+            const langResponses = MULTILINGUAL_RESPONSES[language] || {}; 
+            if (langResponses[symptom]) {
+                return langResponses[symptom];
+            }
+            // Fallback to runtime translation
+            const englishText = RESPONSES_EN[symptom] || RESPONSES_EN['general_discomfort'];
+            return await translateText(englishText, language);
+        }
 
         window.addEventListener('load', () => { userInput.focus(); window.speechSynthesis.getVoices(); });
         if (window.speechSynthesis) { window.speechSynthesis.onvoiceschanged = () => { console.log('✓ Voices loaded:', window.speechSynthesis.getVoices().length); }; }
