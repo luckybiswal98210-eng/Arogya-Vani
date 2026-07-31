@@ -33,21 +33,7 @@ loginTypeBtns.forEach(btn => {
     });
 });
 
-// Check if user is already logged in
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().role === "admin") {
-                window.location.href = "/admin/admin-dashboard.html";
-            } else {
-                window.location.href = "/dashboard.html";
-            }
-        } catch (e) {
-            window.location.href = "/dashboard.html";
-        }
-    }
-});
+
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();

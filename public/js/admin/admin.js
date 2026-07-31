@@ -4,6 +4,8 @@ import {
   collection,
   getDocs,
   addDoc,
+  doc,
+  getDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
@@ -123,8 +125,27 @@ async function loadRegistrations() {
   });
 }
 
-// Load registrations on page load
-loadRegistrations();
+// Auth and Admin Role Check
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    window.location.href = "/index.html";
+    return;
+  }
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (!userDoc.exists() || userDoc.data().role !== "admin") {
+      alert("Access denied. Admin rights required.");
+      await signOut(auth);
+      window.location.href = "/index.html";
+      return;
+    }
+    // Verified admin user -> load data
+    loadRegistrations();
+  } catch (err) {
+    console.error("Admin auth check error:", err);
+    window.location.href = "/index.html";
+  }
+});
 
 // -------- ADD VACCINATION --------
 addBtn.addEventListener("click", async () => {
