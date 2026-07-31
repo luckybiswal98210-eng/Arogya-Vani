@@ -165,8 +165,9 @@ Visit `http://localhost:5000` in your browser.
 ```
 Arogya-Vani/
 ├── public/                      # Public web files
-│   ├── index.html              # User dashboard
-│   ├── login.html              # Unified login page
+│   ├── index.html              # Unified login page
+│   ├── dashboard.html          # User dashboard
+│   ├── login.html              # Login redirect page
 │   ├── signup.html             # User registration
 │   ├── chatbot-new.html        # Enhanced chatbot interface
 │   ├── chatbot-data.js         # Multilingual health database

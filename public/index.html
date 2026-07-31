@@ -2,64 +2,77 @@
 <html>
 
 <head>
-  <title>User Dashboard</title>
+  <title>Login - Arogya Vani</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .login-type-selector {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 12px;
+    }
+
+    .login-type-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 16px;
+    }
+
+    .login-type-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-type-btn:hover:not(.active) {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+
+    .login-icon {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
-    <h2>User Dashboard</h2>
-    <p class="welcome-text">Welcome to Arogya Vani Health System</p>
+    <h2>Login to Arogya Vani</h2>
+    <p class="welcome-text">Welcome back! Please select your login type</p>
 
-    <!-- Quick Actions -->
-    <div class="dashboard-section">
-      <h3>Quick Actions</h3>
-      <a href="chatbot-new.html" target="_blank" class="action-btn chatbot-btn">
-        🤖 Chat with Health Bot
-      </a>
-      <a href="tel:7488726719" class="action-btn emergency-btn">
-        🚨 Call Emergency (7488726719)
-      </a>
+    <!-- Login Type Selector -->
+    <div class="login-type-selector">
+      <button class="login-type-btn active" data-type="user">
+        <span class="login-icon">👤</span> User Login
+      </button>
+      <button class="login-type-btn" data-type="admin">
+        <span class="login-icon">🔐</span> Admin Login
+      </button>
     </div>
 
-    <!-- Vaccination Info -->
-    <div class="dashboard-section">
-      <h3>Next Vaccination Date</h3>
-      <p id="nextVaccineDate" class="vaccine-date">Loading...</p>
-    </div>
+    <!-- Login Form -->
+    <form id="loginForm">
+      <input type="text" id="identifier" placeholder="Email or Phone Number" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button id="loginBtn" type="submit">Login</button>
+    </form>
 
-    <!-- Registration Options -->
-    <div class="dashboard-section">
-      <h3>Child Registration</h3>
-      <a href="registration.html" class="action-btn registration-btn">
-        📝 Fill Registration Form (Text)
-      </a>
+    <p id="errorMsg" style="color: #f5576c; text-align: center; margin-top: 15px;"></p>
 
-      <div class="audio-section">
-        <h4>Audio Registration (Optional)</h4>
-        <p class="info-text">
-          ✅ If you filled the form, audio will be attached to the same registration.<br>
-          ✅ If you did not fill the form, audio will be saved as audio-only registration.
-        </p>
-
-        <div class="audio-controls">
-          <button id="startRecBtn" class="btn-secondary">🎤 Start Recording</button>
-          <button id="stopRecBtn" class="btn-secondary" disabled>⏹️ Stop</button>
-        </div>
-
-        <p id="audioStatus" class="status-text">Status: idle</p>
-        <pre id="audioErr"></pre>
-        <audio id="audioPlayer" controls></audio>
-      </div>
-    </div>
-
-    <!-- Logout -->
-    <button id="logoutBtn" class="btn-logout">Logout</button>
+    <p>New user? <a href="/signup.html">Create Account</a></p>
   </div>
 
-  <script type="module" src="/js/user/user.js"></script>
-  <script type="module" src="/js/user/record-upload.js"></script>
+  <script type="module" src="/js/user/unified-login.js"></script>
 </body>
-
 
 </html>

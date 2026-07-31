@@ -9,7 +9,7 @@ const form = document.getElementById("regForm");
 const photoInput = document.getElementById("childPhoto");
 
 auth.onAuthStateChanged((user) => {
-  if (!user) window.location.href = "/login.html";
+  if (!user) window.location.href = "/index.html";
 });
 
 // Convert image to Base64
@@ -63,7 +63,7 @@ form.addEventListener("submit", async (e) => {
     localStorage.setItem("lastRegistrationId", docRef.id);
 
     alert("Registration submitted ✅ You may also record audio from dashboard (optional).");
-    window.location.href = "/index.html";
+    window.location.href = "/dashboard.html";
   } catch (err) {
     alert("Submit failed ❌ " + err.message);
   }

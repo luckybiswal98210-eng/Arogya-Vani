@@ -15,7 +15,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
     // 🔥 ALWAYS redirect to the SAME login page
-    window.location.href = "/login.html";
+    window.location.href = "/index.html";
     return;
   }
 
@@ -46,7 +46,7 @@ logoutBtn.addEventListener("click", async () => {
     await signOut(auth);
 
     // 🔥 FORCE correct login page
-    window.location.href = "/login.html";
+    window.location.href = "/index.html";
   } catch (e) {
     alert("Logout failed ❌ " + e.message);
   }

@@ -202,5 +202,5 @@ window.sendWhatsApp = function (phone, childName) {
 // -------- LOGOUT --------
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
-  window.location.href = "/login.html";
+  window.location.href = "/index.html";
 });
