@@ -1,6 +1,9 @@
 import { auth, db } from "/js/firebase.js";
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// Always clear any existing browser session when arriving at the login page
+signOut(auth).catch(() => {});
 
 const form = document.getElementById("loginForm");
 const errorMsg = document.getElementById("errorMsg");
